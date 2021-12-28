@@ -49,10 +49,9 @@ const sketch = ({ context, width, height }) => {
 };
 
 function rotateAroundVector(context,vector,rotation) {
-	let x =(vector.x)*Math.cos(rotation) + (vector.y)*Math.sin(rotation);
-	let y = -(vector.x)*Math.sin(rotation)+(vector.y)*Math.cos(rotation);
-	context.rotate(rotation);	
-	context.translate(x-vector.x,y-vector.y);
+	context.translate(vector.x,vector.y);
+	context.rotate(rotation);
+	context.translate(-vector.x,-vector.y);
 }
 
 
