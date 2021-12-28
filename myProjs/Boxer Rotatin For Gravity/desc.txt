@@ -1,0 +1,3 @@
+Quadrati sono attratti da un punto rotante e tendono a subirne le conseguenze.
+
+Notare l'uso della classe "Lattice"
