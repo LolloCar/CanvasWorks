@@ -1,8 +1,11 @@
 const canvasSketch = require('canvas-sketch');
 const random = require('canvas-sketch-util/random');
+const math=require('canvas-sketch-util/math');
 
 const settings = {
-  dimensions: [ 1080,1080 ]
+  dimensions: [ 1080,1080 ],
+  animate:true,
+  duraton:2
 };
 
 
@@ -30,7 +33,9 @@ const sketch = ({ context, width, height }) => {
     context.fillStyle = 'white';
     context.fillRect(0, 0, width, height);
 	context.fillStyle = 'black';
-	drawables.forEach(drawable => {drawable.draw(context);})
+	drawables.forEach(drawable => {drawable.draw(context);
+		drawable.update();})
+
   };
 };
 
@@ -75,6 +80,8 @@ class Box {
 	constructor (position, rotation) {
 		this.pos = position;
 		this.rotation = rotation;
+		this.rotationalAcceleration = 0;
+		this.rotationalSpeed = 0;
 	}
 	
 	draw(context) {
@@ -87,6 +94,33 @@ class Box {
 		context.restore();
 		
 	}
+	
+	update() {
+		
+		const springHardness = .015;
+		const frictionK = .055;
+		if (Math.abs(this.rotationalSpeed)<0.001 && Math.abs(this.rotation)<Math.PI/90) {
+			console.log('Artifical stop');
+			this.rotation = 0; return;
+		}
+		let spring = Math.abs(this.rotation * springHardness);
+		if (this.rotation >0)console.log('Spring = '+spring);
+		let friction =  Math.abs(this.rotationalSpeed*frictionK);
+		this.rotationalAcceleration =elaborateAcc(spring,friction,math.sign(this.rotation),math.sign(this.rotationalSpeed),this.rotation)
+		this.rotation += this.rotationalSpeed;
+		
+		
+		if (this.rotation>0) console.log('rotationalAcceleration = '+this.rotationalAcceleration);
+		if (Math.abs(this.rotationalAcceleration) < 0.00001) {
+			this.rotationalAcceleration = 0;
+		}
+		this.rotationalSpeed += this.rotationalAcceleration;	
+	}
+}
+
+function elaborateAcc(spring,friction,sign,speedSign,position) {
+	return spring*sign*-1 + friction*speedSign*-1;
+	
 }
 
 const circle = (context,centerX,centerY,radius) => {
