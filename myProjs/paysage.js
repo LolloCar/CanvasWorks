@@ -23,8 +23,7 @@ const params = {
 	showSunAdditionalRadius : false
 }
 
-const peaceDuration = 1;
-const transitionDuration = 3;
+const transitionDuration = 4;
 
 const palettes = [];
 
@@ -106,16 +105,17 @@ const drawWave = (context,color,bound1,bound2,average1,frame,delta,fill) => {
 let palette,nextPalette;
 
 const cyclePalettes = () => {
-	console.log('Old palette = '+(palette?palette:'undefined'));
+	//console.log('Old palette = '+(palette?palette:'undefined'));
 	palette = palettes[currentPaletteIndex];
 	nextPalette = palettes[math.wrap(currentPaletteIndex+1,0,palettes.length)];
-	console.log('New palette = '+(palette));
+	//console.log('New palette = '+(palette));
 }
 
 
 //https://gist.github.com/gre/1650294 easeInOutQuad
 let ease = (t) => { return t<.5 ? 2*t*t : -1+(4-2*t)*t};
 
+let phase = false;
 
 const sketch = () => {
 	
@@ -133,66 +133,25 @@ const sketch = () => {
 
   	const t = params.animate ? time : params.time;
   	
-  	transitioningCondition = (Math.floor(time%(peaceDuration+transitionDuration)) == 0);
-  	if (transitioningCondition && !isTransitioning) {
-  		console.log('Transition start');
-  		isTransitioning = true;
-  		transitionStartTime = t;
-  	}	
-  	if (isTransitioning) {
-  		//the 0 - 1 time of transition
-  		let transitionProgress = ease((t-transitionStartTime)/transitionDuration);
-  		//mix the colors
-  		color0 = Color.blend(palette[0],nextPalette[0],transitionProgress).hex;
-  		color1 = Color.blend(palette[1],nextPalette[1],transitionProgress).hex;
-  		color2 = Color.blend(palette[2],nextPalette[2],transitionProgress).hex;
-  		color3 = Color.blend(palette[3],nextPalette[3],transitionProgress).hex;
-  		//let the sun go down
-  		if (transitionProgress<0.5)  {
-  			//console.log('sun going down...');
-  			//sun goes down (225->135)			
-  			if (sunPosition == 0)	sunRotation = math.degToRad(225) - Math.PI*transitionProgress;
-  			if (sunPosition == 2)	sunRotation = math.degToRad(-45) + Math.PI*transitionProgress;
-  		}
-  		//let the sun go up
-  		if (transitionProgress>0.5) {
-  			console.log('sun going up.... sunPosition '+sunPosition);
-  			 //start the sun transitioning (only once)
-  			 if(sunPosition == 0) {
-  			 	console.log('Start transition - swapping left to right')
-  			 	sunPosition = 1;
-  			 	sunRotationCenter =  { x: 0,y : sketchSize};
-  			 }
-  			 if (sunPosition == 1)
-  			 {
-  			 	//sun goes up (225->135)			
-  			 	sunRotation = math.degToRad(45) - Math.PI*(transitionProgress-0.5); 	
-  			 }
-  			 if(sunPosition == 2) {
-  			 	sunPosition = 3;
-  			 	sunRotationCenter =  { x: sketchSize,y : sketchSize};
-  			 }
-  			 if (sunPosition == 3) {
-  			 	sunRotation = math.degToRad(135) + Math.PI*(transitionProgress-0.5); 	
-  			 }
-  		}
-  		//don't use the easened version because it never reaches 1
-  		if ((t-transitionStartTime)/transitionDuration>=1) {
-  			console.log('Transition end');
-  			isTransitioning = false;
+		//the 0 - 1 time of transition
+		let transitionProgress = ((t%transitionDuration) / transitionDuration);
+		//mix the colors
+		console.log('Progress = '+transitionProgress);
+		if (transitionProgress<0.5 && phase) {
+				phase=false;
   			currentPaletteIndex = math.wrap(++currentPaletteIndex,0,palettes.length);
   			console.log('Palette index: '+currentPaletteIndex);
   			cyclePalettes();
-  	}} else {
-  		if (sunPosition == 1) sunPosition = 2;
-  		if (sunPosition == 3) sunPosition = 0;
-  		color0 = palette[0];
-  		color1 = palette[1];
-  		color2 = palette[2];
-  		color3 = palette[3];
-
   	}
-	  
+  	if (transitionProgress>0.5) phase = true; //no other idea to execute the palette swap only once
+		color0 = Color.blend(palette[0],nextPalette[0],transitionProgress).hex;
+		color1 = Color.blend(palette[1],nextPalette[1],transitionProgress).hex;
+		color2 = Color.blend(palette[2],nextPalette[2],transitionProgress).hex;
+		color3 = Color.blend(palette[3],nextPalette[3],transitionProgress).hex;
+		//let the sun go down
+		sunRotation = math.degToRad(270) - Math.PI*2*transitionProgress;
+
+	  sunRotationCenter.x = math.pingPong(t*100 + width,width);
 		//console.log(sunRotationCenter,math.radToDeg(sunRotation));
 		
 		const sunX = sunRotationCenter.x + sunRotationRadius * Math.cos(sunRotation);
@@ -257,7 +216,7 @@ const createPane = () => {
 	pane.addInput(params,'showSunRotationCenter',{label : 'sun center'});
 	pane.addInput(params,'showSunAdditionalRadius',{label : 'debug radius'});
 	
-	pane.addInput(params,'time',{min:0,max:100});
+	pane.addInput(params,'time',{min:0,max:5});
 }
 
-//createPane();
+createPane();
