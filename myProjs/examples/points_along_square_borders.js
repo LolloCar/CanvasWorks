@@ -2,7 +2,7 @@ const canvasSketch = require('canvas-sketch');
 const math = require('canvas-sketch-util/math');
 const random = require('canvas-sketch-util/random');
 const geometry  = require('canvas-sketch-util/geometry');
-const {klib} = require('../kyobalib');
+const {klib} = require('../../kyobalib');
 const settings = {
   dimensions: [ 1000, 1000 ]
 };
@@ -40,8 +40,8 @@ const drawLines = (context,points) => {
 
 const sketch = ({width, height}) => {
 
-  const insideTolerance = 100;
-  const outsideTolerance= 100;
+  const insideTolerance = 50;
+  const outsideTolerance= 50;
   const box = [width/4,height/4,width/2,height/2];
   const numOfBallz = 2000;
   return ({ context, width, height }) => {

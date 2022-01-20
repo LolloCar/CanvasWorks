@@ -28,6 +28,7 @@ const kyobalib =  {
 	
 	//returns the box [x,y,w,h] center
 	box_getCenter : function (box) {
+		if (!Array.isArray(box)) console.error('box_getCenter: arguments must be an array');
 		return  [box[0]+box[2]/2,box[1]+box[3]/2];
 	},
 
@@ -44,18 +45,12 @@ const kyobalib =  {
 				});
 		return newArray;
 	},
-	//Given a [x,y,width,height] box and a point P, returns the angle A - O - P,
-	//with A being the intersection between the box right side and X axis, and O the center of the Box.
-	//TODO useless.... turn it into a generic angle function (and maybe write an AOP function)
-	box_getPointAngle: function (p,box) {
-		const center = box_getCenter(box);
-		return Math.atan2(p[0]-center[0],p[1]-center[1]);
-	},
+
 	//Given a [x,y,width,height] box and an angle, returns the distance of the box border from the center for the angle
 	//FIXME maybe could be done better with simpler trigonometry? 
 	box_getRadialDistance(box,angle) {
 		const point = this.box_getPointAtAngle(box,angle);
-		return this.pointsDistance(center,point);
+		return this.pointsDistance(this.box_getCenter(box),point);
 	},
 
 	//Given a [x,y,width,height] box and an angle, returns the [x,y] point on the box border at said angle
@@ -75,17 +70,29 @@ const kyobalib =  {
 			return [center[0]+(1/Math.tan(angle))*box[3]/2,center[1]-box[3]/2];			
 		}
 	},
+	
 
 	//return a [x,y] point for the coordinates of a random point within 'tolerance' from the bounding box.
+	//FUN FACT: no algorithm seems to be good enough for an even distribution of points
 	box_randomPointNearBoxBorder: function(x,y,width,height,insideTolerance,outsideTolerance) {
 		if (insideTolerance<0 || outsideTolerance<0) {
-			alert('Tolerances must be positive.');
+			console.error('Tolerances must be positive.');
 			return null;
 		}
-		//Determino un angolo e una dimensione della scatola a random. Poi trovo il punto tramite la distanza
-		const angle = random.range(0,2*Math.PI);//random.range(-Math.PI,Math.PI);
-		const randomBox = this.box_alignedBox(x,y,width,height,null,null,random.range(-insideTolerance,outsideTolerance));
-		return this.box_getPointAtAngle(randomBox,angle);
+		//ALGORITHM : I generate a random point in the box and then respatiate it inside the box
+		const box = [x,y,width,height];
+		const p = [random.range(x,x+width),random.range(y,y+height)];
+		const center = this.box_getCenter(box);
+		const p_angle = Math.atan2(p[0]-center[0],p[1]-center[1]);
+		const sme = this.box_alignedBox2(box,null,null,-insideTolerance);
+		const bme = this.box_alignedBox2(box,null,null,outsideTolerance);
+		return this.respatiatePoint(p,center,math.mapRange(this.pointsDistance(p,center),
+														   0,
+														   this.box_getRadialDistance(box,p_angle),
+														   this.box_getRadialDistance(sme,p_angle),
+														   this.box_getRadialDistance(bme,p_angle),
+			),0);
+		
 	},
 
 	//point p is in [x,y] form. Distance is negative if point is inside the box and positive if point is outside the box

@@ -89,7 +89,7 @@ const sketch = ({width, height}) => {
 		context.translate(cellw*0.5, cellh*0.5);
 		//circle(context,0,0,30,true);
 		context.strokeRect(-w/2,-h/2,w,h);
-		const randomTriangle = klib.randomTriangle(-w/2,-h/2,w,h,0);
+		const randomTriangle = klib.randomTriangle(-w/2,-h/2,w,h,40);
 		drawLines(context,randomTriangle);
 		context.restore();
 	}
