@@ -48,10 +48,8 @@ const kyobalib =  {
 	//with A being the intersection between the box right side and X axis, and O the center of the Box.
 	//TODO useless.... turn it into a generic angle function (and maybe write an AOP function)
 	box_getPointAngle: function (p,box) {
-		const center = this.box_getCenter(box);
-		const dx = p[0]-center[0];
-		const dy = p[1]-center[1];
-		return Math.atan(dy/dx);
+		const center = box_getCenter(box);
+		return Math.atan2(p[0]-center[0],p[1]-center[1]);
 	},
 	//Given a [x,y,width,height] box and an angle, returns the distance of the box border from the center for the angle
 	//FIXME maybe could be done better with simpler trigonometry? 
@@ -86,7 +84,7 @@ const kyobalib =  {
 		}
 		//Determino un angolo e una dimensione della scatola a random. Poi trovo il punto tramite la distanza
 		const angle = random.range(0,2*Math.PI);//random.range(-Math.PI,Math.PI);
-		const randomBox = this.enclosingBox(x,y,width,height,null,null,random.range(-insideTolerance,outsideTolerance));
+		const randomBox = this.box_alignedBox(x,y,width,height,null,null,random.range(-insideTolerance,outsideTolerance));
 		return this.box_getPointAtAngle(randomBox,angle);
 	},
 
@@ -100,11 +98,10 @@ const kyobalib =  {
 		return Math.min(Math.abs(p[0]-x),Math.abs(p[1]-y),Math.abs(x+width-p[0]),Math.abs(y+height-p[1]))*-1
 	},
 
-	//given a box, returns a box [x,y,width,height] that contains it (or one that is contained)
+	//given a box, returns a box [x,y,width,height] that contains it (or one that is contained) - i.e. sharing same center
 	//You can either pass newWitdh AND newHeight, OR the border (not both)
 	//Border can be negative to get a "contained" box. 
 	//Notice that if border = 20 the box is 40 pixels larger.
-	//TODO changeName, the box is not necessarily "enclosing"
 	box_alignedBox : function (x,y,width,height,newWidth,newHeight,border) {
 		if (typeof border == 'undefined' || border == null) border = 0;
 		if (typeof newWidth == 'undefined' || newWidth == null) newWidth = 0;
@@ -127,11 +124,10 @@ const kyobalib =  {
 		return this.box_alignedBox(box[0],box[1],box[2],box[3],newWidth,newHeight,border);
 	},
 
-	//Draws a random triangle contained in the given box.
+	//Returns a random triangle contained in the given box.
 	//Each vertex can have a distance up to 'tolerance' from the bounding box. Notice that distance 
 	//is calculated from the side (or prolongement of it).
 	//Tolerance is always considered inward.
-	//
 	randomTriangle: function(x,y,width,height,tolerance,keepProportions) {
 		if (typeof keepProportions == 'undefined') keepProportions=true;
 		console.log('Draw triangle in '+x+','+y+','+width+','+height);
@@ -142,8 +138,6 @@ const kyobalib =  {
 		const p3=[random.range(0,1000),random.range(0,1000)];
 		const triangle=[p1,p2,p3];
 		return this.reboundLine(triangle,randomBox,keepProportions);
-		
-			
 	},
 	
 	//given a point p  ([x,y]) and another point o, moves p at distance targetDistance from o, on the same segment.
