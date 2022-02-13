@@ -10,7 +10,7 @@ const sketchSize = 1080;
 const settings = {
   dimensions: [ sketchSize, sketchSize ],
   animate:true,
-  duration:30,
+  duration:60,
   fps:30
 
 };
@@ -46,11 +46,11 @@ palettes.push(['#30475E','#F05454','#121212','#F5F5F5']);
 palettes.push(['#8E05C2','#700B97','#3E065F','#000000']);
 
 
-
+//TODO aggiungere linee col culo largo(nuvole) che vanno lentamente da destra a sinistra
 
 let sunPosition = 0; //0 = left ; 1 - transitioning left to right ; 2 - right; 3 - transitioning right to left
-let sunRotationCenter =  { x: sketchSize,y : sketchSize};
-const sunRotationRadius = sketchSize * 2/3 * Math.sqrt(2);
+let sunRotationCenter =  { x: sketchSize/2,y : sketchSize/2};
+const sunRotationRadius = sketchSize /2
 
 
 const circle = (context,centerX,centerY,radius,fill) => {
@@ -82,7 +82,7 @@ const drawWave = (context,color,bound1,bound2,average1,frame,delta,fill) => {
 	context.fillStyle =color;
 	context.strokeStyle =color;
 	
-	let progression = frame*0.2;
+	let progression = frame;
 	
 	let startA = randomPoint(progression,delta,-bound1,average1,0,average1+bound1,300);
 	let control1A =  randomPoint(progression,delta+10,0+bound2,average1,sketchSize/2,average1+bound1,300);
@@ -113,13 +113,40 @@ const cyclePalettes = () => {
 
 
 //https://gist.github.com/gre/1650294 easeInOutQuad
-let ease = (t) => { return t<.5 ? 2*t*t : -1+(4-2*t)*t};
+//let ease = (t) => { return t<.5 ? 2*t*t : -1+(4-2*t)*t};
 
 let phase = false;
 
-const sketch = () => {
+
+class Cloud {
+
+	constructor(x,y,size,speed) {
+		this.x = x;
+		this.y = y;
+		this.size = size;
+		this.speed = speed;
+		console.log(this);
+	} 
+
+	draw(context,color) {
+		context.strokeStyle = 'black';
+		context.lineWidth = 50;
+		context.lineCap = 'round';
+		context.beginPath();
+		context.moveTo(this.x,this.y);
+		context.lineTo(this.x+this.size,this.y);
+		context.stroke();
+	}
+
+
+
+}
+
+const clouds = [];
+
+const sketch = ({width, height}) => {
 	
-	
+	//utilizzati nel disegno delle "onde"
   const bound1 = sketchSize/8;
   const bound2 = sketchSize/4;
   
@@ -127,7 +154,11 @@ const sketch = () => {
   
   cyclePalettes();
   
-  let sunRotation = math.degToRad(180);
+  let sunRotation = math.degToRad(360);
+
+  for (let i = 0; i<1; i++){
+  	clouds.push(new Cloud(random.range(0,width),random.range(0,height/2),50,1));
+  }
 
   return ({ context, width, height,frame,time,deltaTime }) => {
 
@@ -136,22 +167,22 @@ const sketch = () => {
 		//the 0 - 1 time of transition
 		let transitionProgress = ((t%transitionDuration) / transitionDuration);
 		//mix the colors
-		console.log('Progress = '+transitionProgress);
+		//console.log('Progress = '+transitionProgress);
 		if (transitionProgress<0.5 && phase) {
 				phase=false;
   			currentPaletteIndex = math.wrap(++currentPaletteIndex,0,palettes.length);
   			console.log('Palette index: '+currentPaletteIndex);
   			cyclePalettes();
   	}
-  	if (transitionProgress>0.5) phase = true; //no other idea to execute the palette swap only once
+  	if (transitionProgress>0.5) phase = true; //no other idea on how to execute the palette swap only once
 		color0 = Color.blend(palette[0],nextPalette[0],transitionProgress).hex;
 		color1 = Color.blend(palette[1],nextPalette[1],transitionProgress).hex;
 		color2 = Color.blend(palette[2],nextPalette[2],transitionProgress).hex;
 		color3 = Color.blend(palette[3],nextPalette[3],transitionProgress).hex;
 		//let the sun go down
-		sunRotation = math.degToRad(270) - Math.PI*2*transitionProgress;
+		sunRotation = Math.PI*2*transitionProgress;
 
-	  sunRotationCenter.x = math.pingPong(t*100 + width,width);
+	  //sunRotationCenter.x = math.pingPong(t*100 + width,width);
 		//console.log(sunRotationCenter,math.radToDeg(sunRotation));
 		
 		const sunX = sunRotationCenter.x + sunRotationRadius * Math.cos(sunRotation);
@@ -194,6 +225,8 @@ const sketch = () => {
 
 		context.restore();
 		
+		//draw clouds
+		clouds.forEach(cloud => cloud.draw(context));
 		
 		if (drawCurvePoints) {
 			context.fillStyle = 'green';
