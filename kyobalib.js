@@ -18,8 +18,11 @@ const kyobalib =  {
 		return [box[0],box[1],box[2]-box[0],box[3]-box[1]];
 	},
 	
-	//converts an array of two [x,y] points to [x,y,w,h] box
-	//p1 must be top left and p2 must be bottom right
+	/**
+	* Converts two points representing top left and bottom right of a rect in a XYWH box
+	* @pa an array of two x-y arrays 
+	* @returns an array (XYWH representation of the rect)
+	*/
 	box_pointArrayToWh : function (pa) {
 		let p1=pa[0];let p2=pa[1];
 		return [p1[0],p1[1],p2[0]-p1[0],p2[1]-p1[1]];
@@ -32,6 +35,7 @@ const kyobalib =  {
 		return  [box[0]+box[2]/2,box[1]+box[3]/2];
 	},
 
+	// Takes 3 arguments, all arrays : 2 x-y points and a XYWH box
 	//Given a segment from p0 to p1 and a box [x,y,width,height], returns
 	//an array with the points of contact of the segment with the box. The segment extremes,p0 and p1,  
 	//are returned only if they lay on the border of the box.
@@ -131,7 +135,7 @@ const kyobalib =  {
 		return this.box_alignedBox(box[0],box[1],box[2],box[3],newWidth,newHeight,border);
 	},
 
-	//Returns a random triangle contained in the given box.
+	//Returns a random triangle (three [x,y] points) contained in the given box.
 	//Each vertex can have a distance up to 'tolerance' from the bounding box. Notice that distance 
 	//is calculated from the side (or prolongement of it).
 	//Tolerance is always considered inward.
@@ -147,14 +151,28 @@ const kyobalib =  {
 		return this.reboundLine(triangle,randomBox,keepProportions);
 	},
 	
-	//given a point p  ([x,y]) and another point o, moves p at distance targetDistance from o, on the same segment.
-	//It returns the final point [x,y].
-	//if you provide a distanceFactor different from zero, moves p at a distance equal to originalDistance*distanceFactor
+	/** given a point p  ([x,y]) and another point o, moves p at distance targetDistance from o, on the same segment.
+	*It returns the final point [x,y].
+	*if you provide a distanceFactor different from zero, moves p at a distance equal to originalDistance*distanceFactor
+	* @p first point [x,y], the one to be moved
+	* @o the origin point [x,y]
+	* @targetDistance the final distance of p from o (on the same p-o vector)
+	* @distanceFactor (overrides target distance) see description
+	*/
 	respatiatePoint: function (p,o,targetDistance,distanceFactor) {
 		if (typeof distanceFactor == 'undefined' || distanceFactor == null || distanceFactor==0)  {
 			distanceFactor = targetDistance/this.pointsDistance(p,o);
 		}
 		return [(p[0]-o[0])*distanceFactor+o[0],(p[1]-o[1])*distanceFactor+o[1]];
+	},
+		
+	/**
+	* "Reflects" the point horizontally, in respect to a vertical line set at X 
+	* @p the point [x,y]
+	* @x the horizontal mirroring position
+	*/
+	reflectPointH: function (p,x) {
+		return this.respatiatePoint(p,[x,p[1]],0,-1);
 	},
 
 	pointsDistance: function(p1,p2) {
