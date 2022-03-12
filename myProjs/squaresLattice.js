@@ -1,5 +1,6 @@
 const canvasSketch = require('canvas-sketch');
 const random = require('canvas-sketch-util/random');
+const math = require('canvas-sketch-util/math');
 const settings = {
   dimensions: [ 2048, 2048 ],
   animate:true
@@ -9,14 +10,14 @@ const sketch = ({ context, width, height }) => {
   
   const boxPerSide = 5;
   const boxSize = width*0.15;
-  const gap = boxSize*0.01;
+  const gap = boxSize*0.05;
   
   let topDistance = (width - boxSize*boxPerSide - gap*(boxPerSide-1)) /2
   let bouncersX = [];
   let bouncersY = [];
   for (let x = 0; x < boxPerSide*boxPerSide; x++) {
-	bouncersX.push(new Bouncer(0,20,1));
-	bouncersY.push(new Bouncer(0,20,1));
+	bouncersX.push(new Bouncer(0,30,1,x));
+	bouncersY.push(new Bouncer(0,30,1,x));
   }
   
   return ({ context, width, height }) => {
@@ -36,24 +37,26 @@ const sketch = ({ context, width, height }) => {
 
 class Bouncer {
 	
-	constructor(min,max,speed) {
+	constructor(min,max,speed,type) {
 		console.log('Bouncer between '+min+' and '+max);
 		this.min = min;
 		this.max = max;
-		this.value = random.range(min,max);
+		this.counter = random.range(min,max);
+		this.value = this.counter;
 		this.speed = speed;
+		this.type = type;
 	}
 	
 	update() {
-		this.value += this.speed;
-		if (this.value>=this.max) {
-			this.value = this.max;
-			this.speed *= -1;
-		}
-		if (this.value<=this.min) {
-			this.value = this.min;
-			this.speed *= -1;
-		}
+		 if (this.type%3==1) {
+		this.counter += this.speed;
+		this.value = math.pingPong(this.counter,this.max);
+		 } else if (this.type%3==2) {
+		this.counter += this.speed;
+		this.value = math.lerp(this.counter,this.min,this.max);
+		 }  else {
+			 this.value = 0;
+		 }
 	}
 
 }

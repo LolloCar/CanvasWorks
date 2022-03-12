@@ -9,7 +9,7 @@ const settings = {
   fps:40
 };
 
-const ballrotationspeed =1.5;
+const ballrotationspeed =.5;
 
 
 const sketch = ({ context, width, height,frame }) => {
@@ -148,7 +148,7 @@ class Box {
 		}
 		const springHardness = .015;
 		const frictionK = .055;
-		const ballPull = 800;
+		const ballPull = 100;
 		
 		/*if (Math.abs(this.rotationalSpeed)<0.001 && Math.abs(this.rotation)<Math.PI/90) {
 			
@@ -159,7 +159,7 @@ class Box {
 		let rotatinBallForce = ballPull*angle/(distance*distance);
 		let friction =  this.rotationalSpeed*frictionK;
 		
-		if (distance>width/2) rotatinBallForce *= 0.2;
+		//if (distance>width/2) rotatinBallForce *= 0.2;
 		
 		this.rotationalAcceleration = -(this.hasSpring?spring:0) -friction + (this.ballAttracted?rotatinBallForce:0);
 		

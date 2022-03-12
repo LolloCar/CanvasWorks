@@ -1,8 +1,9 @@
 const canvasSketch = require('canvas-sketch');
+const random = require('canvas-sketch-util/random');
 
 const canvasSize = 1080;
 let manager;
-let text ='&';
+let text ='A';
 let fontSize = 1200;
 let fontFamily = 'serif';
 
@@ -28,7 +29,7 @@ const sketch = ({ context, width, height }) => {
   return ({ context, width, height }) => {
     typeContext.fillStyle = 'black';
     typeContext.fillRect(0, 0, cols, rows);
-    fontSize = cols;
+    fontSize = cols* 1.3;
     typeContext.fillStyle = 'white';
     typeContext.font = `${fontSize}px ${fontFamily}`;
     typeContext.textBaseline = 'top';
@@ -52,8 +53,13 @@ const sketch = ({ context, width, height }) => {
 
     const typeData = typeContext.getImageData(0,0,cols,rows).data;
 
-    context.drawImage(typeCanvas,0,0);
+    //context.drawImage(typeCanvas,0,0);
     context.fillStyle = 'black';
+    context.fillRect(0,0,width,height);
+
+    context.textBaseline = 'middle';
+    context.textAlign = 'center';
+
     for (let i = 0; i < numCells; i++) {
       const col = i%cols;
       const row = Math.floor(i/cols);
@@ -66,19 +72,34 @@ const sketch = ({ context, width, height }) => {
       const b = typeData[i * 4 + 2];
       const a = typeData[i * 4 + 3];
 
-      context.fillStyle = `rgb(${r},${g},${b},${a})`;
+      const glyph = getGlyph(r);
+
+      context.font = `${cell *2}px ${fontFamily}`;
+      if (Math.random()<0.5)context.font = `${cell *6}px ${fontFamily}`;
+
+      context.fillStyle = 'white'; //`rgb(${r},${g},${b},${a})`;
       
       context.save();
       context.translate(x,y);
       context.translate(cell/2,cell/2);
       //context.fillRect(0,0,cell,cell);
-      context.beginPath();
-      context.arc(0,0,cell*0.5,0,Math.PI*2);
-      context.fill();
+      
+      context.fillText(glyph,0,0);
+      
+
       context.restore();
     }
   };
 };
+
+const getGlyph = (v) => {
+  if (v< 50) return '';
+  if (v<100) return '.';
+  if (v<150) return '-';
+  if (v<200) return '+';
+  const glyphs = '_= /'.split('');
+  return random.pick(glyphs);
+}
 
 const onKeyUp = (e) => {
   text = e.key.toUpperCase();
@@ -88,8 +109,7 @@ const onKeyUp = (e) => {
 document.addEventListener('keyup',onKeyUp);
 
 const start = () => {
-  canvasSketch(sketch, settings).
-    then(mgr => {manager = mgr;manager.render()})
+  canvasSketch(sketch, settings).then(mgr => {manager = mgr;})
 }
 
 start();

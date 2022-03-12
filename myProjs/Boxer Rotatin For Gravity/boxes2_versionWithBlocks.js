@@ -9,23 +9,23 @@ const settings = {
   fps:40
 };
 
-const ballrotationspeed =3;
+const ballrotationspeed =2;
 
 
 const sketch = ({ context, width, height,frame }) => {
 	
-	const rowsPerBlock = 8;
-	const columnsPerBlock = 8;
+	const rowsPerBlock = 3;
+	const columnsPerBlock = 4;
 
 	//size of the grid (width- the height depends on number of rowsPerBlock)
-	const relativesize = 0.68;
+	const relativesize = 0.4;
 
 	const gridw = width * relativesize;
 
 	const cellw = gridw/columnsPerBlock;
 	const cellh = cellw;
 
-	const marginl = (width - columnsPerBlock*cellw)/3;
+	const marginl = (width/2 - columnsPerBlock*cellw)/3;
 	const margint = (height - rowsPerBlock*cellh) / 2;
 	console.log('Width:' +width+',gridw:' + gridw+',cellw: '+cellw+', margint: '+margint);
 	
@@ -33,7 +33,23 @@ const sketch = ({ context, width, height,frame }) => {
 	const boxsize =cellw * 0.8; 
 
 	let lattice = makeLattice(rowsPerBlock,columnsPerBlock,cellw);
-	translateVectorArray(lattice,marginl + cellw/2,margint+cellh/2);
+	let lattice2 =  cloneVectorArray(lattice);
+	lattice2.forEach( item => item.z = -1);
+	translateVectorArray(lattice,marginl+cellw/2,margint+cellh/2);
+	translateVectorArray(lattice2,width-marginl-columnsPerBlock*cellw,margint+cellh/2);
+	let lattice3 =  cloneVectorArray(lattice);
+	let lattice4 =  cloneVectorArray(lattice2);
+	translateVectorArray(lattice3,0,-height/3);
+	translateVectorArray(lattice4,0,-height/3)
+	let lattice5 =  cloneVectorArray(lattice);
+	let lattice6 =  cloneVectorArray(lattice2);
+	translateVectorArray(lattice5,0,height/3);
+	translateVectorArray(lattice6,0,height/3)
+	lattice.push(...lattice2);
+	lattice.push(...lattice3);
+	lattice.push(...lattice4);
+	lattice.push(...lattice5);
+	lattice.push(...lattice6);
 	console.log('Elements = '+lattice.length);
 	let drawables = [];
 	for (let i = 0; i<lattice.length; i++) {
@@ -45,7 +61,7 @@ const sketch = ({ context, width, height,frame }) => {
 	
 	
 	let ballrotation = -Math.PI/120*frame*ballrotationspeed;
-	let ballrotationradius =  width/2 * 0.98;
+	let ballrotationradius =  width/2 * 0.95;
     context.fillStyle = 'grey';
     context.fillRect(0, 0, width, height);
 	// context.translate(width/2,height/2);
@@ -62,7 +78,7 @@ const sketch = ({ context, width, height,frame }) => {
 		
 	context.save();
 	ballposition.x = width/2+Math.cos(ballrotation)*ballrotationradius;
-	ballposition.y = height/2+Math.sin(ballrotation)*ballrotationradius;
+	ballposition.y = height/2+Math.sin(ballrotation*2)*0.5*ballrotationradius;
 	context.fillStyle = 'white';
 	circle(context,ballposition.x,ballposition.y,10);
 	context.restore();
@@ -136,7 +152,7 @@ class Box {
 		this.offset = new Vector(0,0);
 		this.size = size;
 		this.rotation = 0;
-		this.polarity = -1;
+		this.polarity = 1;
 		//this.polarity = position.z;
 	}
 	
@@ -155,7 +171,7 @@ class Box {
 		context.translate(this.offset.x,this.offset.y);
 		context.fillStyle = 'black'
 		context.rotate(this.rotation);
-		context.scale(math.mapRange(this.rotation,0,-Math.PI/10,1,0.6),1);
+		context.scale(math.mapRange(this.rotation,0,Math.PI/10,1,0.6),1);
 		context.fillRect(-this.size/2,-this.size/2,this.size,this.size);
 		context.restore();
 		

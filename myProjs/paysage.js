@@ -23,7 +23,7 @@ const params = {
 	showSunAdditionalRadius : false
 }
 
-const transitionDuration = 4;
+const transitionDuration = 5;
 
 const palettes = [];
 
@@ -38,12 +38,13 @@ let transitionStartTime = -1;
 palettes.push(['#FEECE9','#CCD1E4','#FE7E6D','#2F3A8F']);
 palettes.push(['#FFF89A','#FFC900','#086E7D','#1A5F7A']);
 palettes.push(['#781C68','#9A0680','#FFD39A','#FFF5E1']);
-palettes.push(['#D9D7F1','#FFFDDE','#E7FBBE','#FFCBCB']);
+//palettes.push(['#D9D7F1','#FFFDDE','#E7FBBE','#FFCBCB']);
 //blu / grigio (dark) - alternativa
 palettes.push(['#787A91','#141E61','#0F044C','#EEEEEE']);
 //ghiaccio, carminio, antracite, nero
 palettes.push(['#30475E','#F05454','#121212','#F5F5F5']);
 palettes.push(['#8E05C2','#700B97','#3E065F','#000000']);
+palettes.push(['#F76E11','#FF9F45','#FFBC80','#FC4F4F']);
 
 
 //TODO aggiungere linee col culo largo(nuvole) che vanno lentamente da destra a sinistra
@@ -142,6 +143,9 @@ class Cloud {
 
 }
 
+const sunRotationSpeed=10; //degrees per second
+const sunInitialAngle = math.degToRad(220);
+
 const clouds = [];
 
 const sketch = ({width, height}) => {
@@ -156,9 +160,9 @@ const sketch = ({width, height}) => {
   
   let sunRotation = math.degToRad(360);
 
-  for (let i = 0; i<1; i++){
+  /*for (let i = 0; i<1; i++){
   	clouds.push(new Cloud(random.range(0,width),random.range(0,height/2),50,1));
-  }
+  }*/
 
   return ({ context, width, height,frame,time,deltaTime }) => {
 
@@ -180,7 +184,7 @@ const sketch = ({width, height}) => {
 		color2 = Color.blend(palette[2],nextPalette[2],transitionProgress).hex;
 		color3 = Color.blend(palette[3],nextPalette[3],transitionProgress).hex;
 		//let the sun go down
-		sunRotation = Math.PI*2*transitionProgress;
+		sunRotation = sunInitialAngle + math.degToRad(time * sunRotationSpeed);
 
 	  //sunRotationCenter.x = math.pingPong(t*100 + width,width);
 		//console.log(sunRotationCenter,math.radToDeg(sunRotation));
@@ -188,16 +192,19 @@ const sketch = ({width, height}) => {
 		const sunX = sunRotationCenter.x + sunRotationRadius * Math.cos(sunRotation);
 		const sunY = sunRotationCenter.y + sunRotationRadius * Math.sin(sunRotation);
 		const sunSize = 150;
-		const	gradient = context.createRadialGradient(sunX,sunY,sunSize/2,sunX,sunY,width*1.5);
-		gradient.addColorStop(0,color2);
-		gradient.addColorStop(1,color3);
+		const	backgroundGradient = context.createRadialGradient(sunX,sunY,sunSize/2,sunX,sunY,width*1.5);
+		backgroundGradient.addColorStop(0,color2);
+		backgroundGradient.addColorStop(1,color3);
+		const reversedGradient = context.createRadialGradient(sunX,sunY,sunSize/2,sunX,sunY,width*1.5);
+		reversedGradient.addColorStop(0,color3);
+		reversedGradient.addColorStop(1,color2);
 		//gradient.addColorStop(1,palette[2]);
-		context.fillStyle = gradient;
-    context.fillRect(0, 0, width, height);
+		context.fillStyle = backgroundGradient;
+		context.fillRect(0, 0, width, height);
 		
 		//draw "sun"
 	 	context.fillStyle =  (color3);
-		circle(context, sunX,sunY, sunSize,true);
+		drawSun(context, sunX,sunY, sunSize,color3);
 
 		if (params.showSunRotationCenter) {
 			circle(context, sunRotationCenter.x,sunRotationCenter.y, sunSize*2,false);			
@@ -218,8 +225,8 @@ const sketch = ({width, height}) => {
 		
 		context.lineWidth = 10;
 		if (params.drawWaves) {
-		drawWave(context,color0,bound1,bound2,average1*0.7,t*25,100,true);
-		drawWave(context,color1,bound1,bound2,average1*0.8,t*25,200,true);
+		drawWave(context,color0,bound1,bound2,average1*0.7,t*2.5,100,true);
+		drawWave(context,color1,bound1,bound2,average1*0.8,t*2.5,200,true);
 		}
 		//drawWave(context,(conditionOfDay?palette[2]:'yellow'),bound1,bound2,average1*1.15,frame,0,conditionOfDay);
 
@@ -239,6 +246,34 @@ const sketch = ({width, height}) => {
 		}
 	  };
 };
+let th = 0;
+let thr = 1
+const drawSun = (context,x,y,radius,color) =>	 {
+
+	
+	context.save();
+	context.translate(x,y);
+	context.scale(2,1);
+	context.fillStyle =color+'aa';
+	let i = (th += thr);
+	
+	while (i<(th+360)) {
+		context.rotate(20);
+		context.beginPath();
+		context.arc(-30,0,1600,0,math.degToRad((
+				2.5*(2+Math.sin(math.degToRad(i*2)))
+					)
+				))
+				;
+		context.lineTo(-30,0);
+		context.fill(); 
+		i += 20;
+	}	
+	
+
+	context.restore();
+	circle(context, x,y, radius,true);
+}
 
 canvasSketch(sketch, settings);
 

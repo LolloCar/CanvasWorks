@@ -76,7 +76,7 @@ const kyobalib =  {
 	},
 	
 
-	//return a [x,y] point for the coordinates of a random point within 'tolerance' from the bounding box.
+	//return a [x,y] point within 'tolerance' from the bounding box.
 	//FUN FACT: no algorithm seems to be good enough for an even distribution of points
 	box_randomPointNearBoxBorder: function(x,y,width,height,insideTolerance,outsideTolerance) {
 		if (insideTolerance<0 || outsideTolerance<0) {
@@ -179,6 +179,18 @@ const kyobalib =  {
 		const dx = p2[0]-p1[0];
 		const dy = p2[1]-p1[1];
 		return Math.sqrt(dx*dx + dy*dy);
+	},
+	
+	/**
+	* Translates polar coordinates to radial.
+	* @radius
+	* @azimuth clockwise, polar axis is the "x" direction
+	* @origin the [x,y] array of the origin in cartesian coordinates
+	* returns : the [x,y] point
+	*/
+	ptc: function(radius,azimuth,origin) {
+		if (!Array.isArray(origin)) alert('Polar to Coordinates : origin is not an array');
+		return [origin[0]+radius*Math.cos(azimuth),origin[1]+radius*Math.sin(azimuth)];
 	},
 	
 	//TODO i need these function:

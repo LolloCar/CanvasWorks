@@ -8,7 +8,7 @@ const rs = 20;
 
 const nos = 10; //number of sections
 const wos = ss/nos; // width of section;
-const fod = 40; //density of drops for a wos*wos section
+const fod = 100; //density of drops for a wos*wos section
 
 const settings = {
   dimensions: [ ss, ss ],
@@ -40,21 +40,22 @@ const sketch = ({width, height }) => {
   let frameRoller = wos-rs+1;
   
   //cerchio nero sull'altro canvas
+  /*typeContext.fillStyle = 'white';
+  typeContext.fillRect(0,0,width,height);
   typeContext.fillStyle = 'black';
   typeContext.beginPath();
-  typeContext.arc(width/2,height/2,100,0,Math.PI*2);
-  typeContext.fill();
-  
+  typeContext.arc(width/2,height/2,200,0,Math.PI*2);
+  typeContext.fill();*/
+    typeContext.drawImage(image,0,0,width,height);
+  const typeData = typeContext.getImageData(0,0,width,height).data;
   return ({ context, width, height }) => {
     context.fillStyle = 'white';
     context.fillRect(0, 0, width, height);
 	context.strokeStyle = 'black';
 	
-	//typeContext.arc(
-	 
 	//cycle raindrops removing the ones going out
 	for (let i = drops.length - 1; i >= 0; i--) {
-		drops[i].draw(context);
+		drops[i].draw(context,typeData);
 		drops[i].update();
 		if (drops[i].pos.y >ss) {
 			drops.splice(i, 1);
@@ -77,7 +78,7 @@ const sketch = ({width, height }) => {
 			}
 		}
 	}
-	context.drawImage(typeContext,0,0,width,height);
+	//context.drawImage(typeContext,0,0,width,height);
   };
   
 };
@@ -92,10 +93,29 @@ class Raindrop {
 		this.speed.y = speedY;
 	}
 	
-	draw(context) {
+	
+	draw(context,typeData) {
 		context.save();
-		const greyscale = 255 * (1-this.speed.y /rs);
-		context.strokeStyle =  `rgb(${greyscale},${greyscale},${greyscale})`
+		
+		
+		let index = Math.floor(this.pos.x)+ss*Math.floor(this.pos.y)  ;
+		const r = typeData[index*4 + 0];
+		const g = typeData[index*4 + 1];
+		const b = typeData[index*4 + 2];
+		const a = typeData[index*4 + 3];
+		//`rgb(${r},${g},${b},${a})`;
+
+		
+		
+		let greyscale = 0;
+		if (this.pos.x <0 || this.pos.y<0) {
+			context.strokeStyle = 'black'
+		} else {
+			context.strokeStyle =  `rgb(${r},${g},${b})`
+			//context.lineWidth='3';
+		}// 255 * (1-this.speed.y /rs);
+		//console.log(greyscale);
+		
 		context.beginPath();
 		context.moveTo(this.pos.x,this.pos.y);
 		context.lineTo(this.pos.x,this.pos.y+rl);
@@ -109,3 +129,23 @@ class Raindrop {
 }
 
 canvasSketch(sketch, settings);
+
+const url = 'WIN_20220213_20_30_53_Pro.jpg';
+
+const loadMeSomeImage = (url) => {
+  return new Promise((resolve,reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = () => reject();
+    img.src = url;
+
+  })
+}
+
+const start = async() => {
+  image = await loadMeSomeImage(url);
+  console.log(image);
+  canvasSketch(sketch, settings);
+};
+
+start();
