@@ -8,12 +8,12 @@ const kyobalib =  {
 	 * BOX SHIT EXTRAVAGANZA
 	 * **********/
 
-	//converts a [x,y,width,height] box to [minX,minY,maxX,maxY] box
+	//converts a [x,y,width,height] box to [topLeftX,topLeftY,bottomRightX,bottomRightY] box
 	box_whToMm: function (box) {
 		return [box[0],box[1],box[0]+box[2],box[1]+box[3]];
 	},
 
-	//converts a [minX,minY,maxX,maxY] box to [x,y,width,height] box
+	//converts a [topLeftX,topLeftY,bottomRightX,bottomRightY] box to [x,y,width,height] box
 	box_MmToHw: function (box) {
 		return [box[0],box[1],box[2]-box[0],box[3]-box[1]];
 	},
@@ -58,6 +58,7 @@ const kyobalib =  {
 	},
 
 	//Given a [x,y,width,height] box and an angle, returns the [x,y] point on the box border at said angle
+	//(centered in the centre)
 	box_getPointAtAngle(box,angle) {
 		//normalize the angle
 		angle = math.wrap(angle,-Math.PI,Math.PI);
@@ -119,7 +120,6 @@ const kyobalib =  {
 		if (typeof newHeight == 'undefined' || newHeight == null) newHeight = 0;
 		if ((border>0 && newHeight>0) || (border>0 && newWidth>0) || (border ==0 && newHeight==0 && newWidth==0))
 		{
-			console.log('Returning the box itself');
 			return [x,y,width,height];
 			return null;
 		}
@@ -171,6 +171,7 @@ const kyobalib =  {
 	* @p the point [x,y]
 	* @x the horizontal mirroring position
 	*/
+	//FIXME sarà un po' esagerato riciclare respatiate? x = m + (m-x)
 	reflectPointH: function (p,x) {
 		return this.respatiatePoint(p,[x,p[1]],0,-1);
 	},
@@ -191,6 +192,16 @@ const kyobalib =  {
 	ptc: function(radius,azimuth,origin) {
 		if (!Array.isArray(origin)) alert('Polar to Coordinates : origin is not an array');
 		return [origin[0]+radius*Math.cos(azimuth),origin[1]+radius*Math.sin(azimuth)];
+	},
+	
+	/**
+	* Coordinates to polar; based 
+	*/
+	ctp : function (p,origin) {
+		x1 = p[0]-origin[0];
+		y1 = origin[1]-p[1];
+		let correction = (x1<0) ? Math.PI : 0;
+		return [Math.sqrt(x1*x1+y1*y1), Math.atan(-y1/x1)+correction];
 	},
 	
 	//TODO i need these function:
