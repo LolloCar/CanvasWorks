@@ -31,7 +31,7 @@ const sketch = () => {
 				der_margin+size*Math.floor(i/blockSize),
 				random.pick(['A','B','C','E','H']),
 				random.rangeFloor(0,4),
-				random.rangeFloor(0,3) //speed
+				random.rangeFloor(1,4) //speed
 				);
 	/***
 	* DEBUG
@@ -72,6 +72,7 @@ class Square {
 	
 		
 	finish() {
+		//this.speed = random.rangeFloor(1,4);
 		//console.log(this.animation.getName()+" finished ");
 		this.shape = this.animation.getFinalShape();
 		//console.log("New shape :"+this.shape);
@@ -82,11 +83,11 @@ class Square {
 	}
 	
 	draw(context,time) {
-		let playhead = (time/this.speed)% playheadDuration)/playheadDuration;
+		let playhead = ((time/this.speed)% playheadDuration)/playheadDuration;
 		if (this.lastPlayhead>playhead) {
 			this.finish();
 		}
-		this.lastPlayhead = myPlayhead;
+		this.lastPlayhead = playhead;
 		this.animation.draw(this,context,playhead);
 	}
 }
