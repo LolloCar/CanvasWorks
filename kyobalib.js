@@ -3,6 +3,9 @@ const {random,geometry,math} = require('canvas-sketch-util');
 
 const kyobalib =  {
 
+	setSeed : function (seed) {
+		random.setSeed(seed);
+	},
 	/*************
 	 * 
 	 * BOX SHIT EXTRAVAGANZA
@@ -139,6 +142,8 @@ const kyobalib =  {
 	//Each vertex can have a distance up to 'tolerance' from the bounding box. Notice that distance 
 	//is calculated from the side (or prolongement of it).
 	//Tolerance is always considered inward.
+	
+	//FA CAGARE
 	randomTriangle: function(x,y,width,height,tolerance,keepProportions) {
 		if (typeof keepProportions == 'undefined') keepProportions=true;
 		console.log('Draw triangle in '+x+','+y+','+width+','+height);
@@ -159,6 +164,7 @@ const kyobalib =  {
 	* @targetDistance the final distance of p from o (on the same p-o vector)
 	* @distanceFactor (overrides target distance) see description
 	*/
+	//DOESNT MOVE SHIT, JUST RETURNS THE VALUE
 	respatiatePoint: function (p,o,targetDistance,distanceFactor) {
 		if (typeof distanceFactor == 'undefined' || distanceFactor == null || distanceFactor==0)  {
 			distanceFactor = targetDistance/this.pointsDistance(p,o);
@@ -183,7 +189,7 @@ const kyobalib =  {
 	},
 	
 	/**
-	* Translates polar coordinates to radial.
+	* Translates polar coordinates to caratesian
 	* @radius
 	* @azimuth clockwise, polar axis is the "x" direction
 	* @origin the [x,y] array of the origin in cartesian coordinates
@@ -234,15 +240,19 @@ const kyobalib =  {
 			
 		}
 		const resultLine = [];
-			for (let i=0; i<line.length;i++) {
-				resultLine.push([
-				containerBox[0]+(containerBox[2] * (line[i][0]-currentBoundingBox[0])/currentBoundingBox[2]),
-				containerBox[1]+containerBox[3] * (line[i][1]-currentBoundingBox[1])/currentBoundingBox[3]
-				]);
-			}		
+		for (let i=0; i<line.length;i++) {
+			resultLine.push([
+			containerBox[0]+(containerBox[2] * (line[i][0]-currentBoundingBox[0])/currentBoundingBox[2]),
+			containerBox[1]+containerBox[3] * (line[i][1]-currentBoundingBox[1])/currentBoundingBox[3]
+			]);
+		}		
 		return resultLine;
 	}
+	
+
 
 }
+
+
 
 exports.klib = kyobalib;
